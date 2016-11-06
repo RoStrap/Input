@@ -81,35 +81,54 @@ local Signal = {
 	Disconnect = DisconnectSignal;
 }
 
-local function newSignal(Name)
-	return setmetatable({Connections = {}; Name = Name}, Signal)
+local function newSignal(KeyCode)
+	return setmetatable({Connections = {}; KeyCode = KeyCode}, Signal)
 end
 
-local KeysPressed
-
-local function AddSignals(a, b)
-	local ComboName, Bool = a.Name .. "+" .. b.Name
-	local Combo = newSignal(ComboName)
-
-	local function Verify(KeyName)
-		if Bool then
-			for a = 1, #KeysPressed do
-				if KeysPressed[a].KeyCode.Name == KeyName then
-					Bool = true
-					break
-				else
-					Bool = false
-				end
-			end
-		end
+local function AddSignals(a, b) -- This looks way scarier than it is
+	local KeyCodes = a.KeyCode
+	local Combination
+	if type(KeyCodes) == "table" then
+		Combination = {unpack(KeyCodes)}
+		Combination[#Combination + 1] = b.KeyCode
+	else
+		Combination = {KeyCodes, b.KeyCode}
 	end
 
-	b:Connect(function()
-		KeysPressed = GetKeysPressed(InputService)
-		Bool = true
-		gsub(ComboName .. "+","(.-)%+", Verify)
-		if Bool then
-			FireSignal(Combo)
+	local Combo = newSignal(Combination)
+	Combo.InternalConnection = b:Connect(function()
+		if #Combo.Connections > 0 then -- Save on gas mileage
+			local KeysPressed = GetKeysPressed(InputService)
+			local NumberOfKeysPressed = #KeysPressed
+			local AllButtonsArePressed = true
+
+			if type(KeyCodes) == "table" then
+				for c = 1, #KeyCodes do
+					if AllButtonsArePressed then
+						AllButtonsArePressed = false
+						local KeyCode = KeyCodes[c]
+						for d = 1, NumberOfKeysPressed do
+							if KeysPressed[d].KeyCode == KeyCode then
+								AllButtonsArePressed = true
+								break
+							end
+						end
+					else break
+					end
+				end
+			else
+				AllButtonsArePressed = false
+				for e = 1, NumberOfKeysPressed do
+					if KeysPressed[e].KeyCode == KeyCodes then
+						AllButtonsArePressed = true
+						break
+					end
+				end
+			end
+
+			if AllButtonsArePressed then
+				FireSignal(Combo)
+			end
 		end
 	end)
 
@@ -122,21 +141,17 @@ Signal.__index = Signal
 local RegisteredKeys = {}
 local Keys  = {}
 local Mouse = {__newindex = PlayerMouse}
-local Key = {}
+local Key = {__add = AddSignals}
 
 function Key:__index(i)
 	return self.KeyDown[i]
 end
 
-function Key.__add(a, b)
-	return a.KeyDown + b
-end
-
 function Keys:__index(v)
 	assert(type(v) == "string", "Table Keys should be indexed by a string")
 	local Connections = {
-		KeyUp = newSignal(v);
-		KeyDown = newSignal(v);
+		KeyUp = newSignal(Enum.KeyCode[v]);
+		KeyDown = newSignal(Enum.KeyCode[v]);
 	}
 	self[v] = setmetatable(Connections, Key)
 	RegisteredKeys[v] = true
