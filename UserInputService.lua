@@ -30,11 +30,7 @@ local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local PlayerMouse = Player:GetMouse()
 
--- Pseudo Objects
-local Disconnector = {}
-Disconnector.__index = Disconnector
-
-function Disconnector:Disconnect()
+local function DisconnectConnector(self)
 	local func = self.func
 	local Connections = self.Connections
 	for a = 1, #Connections do
@@ -43,6 +39,9 @@ function Disconnector:Disconnect()
 		end
 	end
 end
+
+local Disconnector = {Disconnect = DisconnectConnector}
+Disconnector.__index = Disconnector
 
 local function ConnectSignal(self, func)
 	if not func then error("Connect(nil)", 2) end
@@ -61,7 +60,7 @@ end
 local function WaitSignal(self)
 	local Connection
 	Connection = ConnectSignal(self, function()
-		Connection = DisconnectSignal(Connection)
+		Connection = DisconnectConnector(Connection)
 	end)
 	repeat until not Connection or not Wait(Heartbeat)
 end
