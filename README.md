@@ -4,7 +4,6 @@ This module is table wrapper designed to simplify dealing with user input. This 
 This module also allows Users to enter `Screenshot Mode` by pressing `-`. Internally, this temporarily moves all ScreenGui in PlayerGui to a Folder in `LocalPlayer` called `GuiBackup`, as well as disabling the TopBar, which in turn temporarily disables the Chat, Backpack, et cetera.
 
 Note: As a wrapper, no functionality is removed from UserInputService. All of UserInputService's built-in properties, functions, and events are still accessible through this module. Access Roblox's full [UserInputService documentation by clicking here](http://wiki.roblox.com/?title=API:Class/UserInputService).
-
 ## API
 ```javascript
 class UserInputService
@@ -21,11 +20,10 @@ class UserInputService
 		Event WelcomeBack(int TimeAbsent)
 //			Event fired when a Player reopens the Roblox Window after closing it for more than @param AbsentThreshold seconds
 ```
+Note: Connections all run on a single thread (the one created by the InputBegan/Ended Connection). If you create multiple connections that yield, they will be called in the order you connected them. If you want to start multiple threads on a single button press, use spawn or a coroutine.
 ## Key events
-
 Key events are stored inside a table called "Keys", which you can access directly
 from the module. Once you've accessed this table, you can index it for any input type that exists in the KeyCode Enum element. For example, if you wanted to create an event for the key "Q", you'd simply index it:
-
 ```lua
 local UserInputService = require(UserInputServiceModule)
 local Keys = UserInputService.Keys

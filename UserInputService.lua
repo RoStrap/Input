@@ -20,10 +20,9 @@ local GetChildren = game.GetChildren
 local sub = string.sub
 local time = os.time
 local find = string.find
-local gsub = string.gsub
-local match = string.match
 local remove = table.remove
-local error, type, select, setmetatable, rawset, tostring, tick = error, type, select, setmetatable, rawset, tostring, tick
+local newInstance = Instance.new
+local type, select, setmetatable, rawset, tostring, tick = type, select, setmetatable, rawset, tostring, tick
 
 -- Client
 local Player = Players.LocalPlayer
@@ -44,10 +43,11 @@ local Disconnector = {Disconnect = DisconnectConnector}
 Disconnector.__index = Disconnector
 
 local function ConnectSignal(self, func)
-	if not func then error("Connect(nil)", 2) end
-	local Connections = self.Connections
-	Connections[#Connections + 1] = func
-	return setmetatable({Connections = Connections; func = func}, Disconnector)
+	if func then
+		local Connections = self.Connections
+		Connections[#Connections + 1] = func
+		return setmetatable({Connections = Connections; func = func}, Disconnector)
+	end
 end
 
 local function DisconnectSignal(self)
@@ -85,24 +85,31 @@ local function newSignal(KeyCode)
 end
 
 local function AddSignals(a, b) -- This looks way scarier than it is
-	local KeyCodes = a.KeyCode
-	local Combination
-	if type(KeyCodes) == "table" then
-		Combination = {unpack(KeyCodes)}
-		Combination[#Combination + 1] = b.KeyCode
+	local KeyCodes, Combination = a.KeyCode
+	local KeyCodeIsTable = type(KeyCodes) == "table"
+	local NumberOfKeyCodes = #KeyCodes
+
+	if KeyCodeIsTable then
+		Combination = {}
+		for a = 1, NumberOfKeyCodes do
+			Combination[a] = KeyCodes[a]
+		end
+		Combination[NumberOfKeyCodes + 1] = b.KeyCode
 	else
 		Combination = {KeyCodes, b.KeyCode}
 	end
 
 	local Combo = newSignal(Combination)
+	local ComboConnections = Combo.Connections
+
 	Combo.InternalConnection = b:Connect(function()
-		if #Combo.Connections > 0 then -- Save on gas mileage
+		if #ComboConnections > 0 then -- Save on gas mileage
 			local KeysPressed = GetKeysPressed(InputService)
 			local NumberOfKeysPressed = #KeysPressed
 			local AllButtonsArePressed = true
 
-			if type(KeyCodes) == "table" then
-				for c = 1, #KeyCodes do
+			if KeyCodeIsTable then
+				for c = 1, NumberOfKeyCodes do
 					if AllButtonsArePressed then
 						AllButtonsArePressed = false
 						local KeyCode = KeyCodes[c]
@@ -176,7 +183,7 @@ function Mouse:__index(v)
 			local Mickey = PlayerMouse[v]
 			if find(tostring(Mickey), "Signal") then
 				Connect(Mickey, function()
-					return FireSignal(Stored, PlayerMouse)
+					FireSignal(Stored, PlayerMouse)
 				end)
 			end
 		end
@@ -186,17 +193,16 @@ function Mouse:__index(v)
 	end
 end
 
-local function KeyInputHandler(KeyEvent, Boolean)
+local function HandleInput(InputEvent, KeyEvent)
 	local RegisteredKeys, FireSignal, Keys = RegisteredKeys, FireSignal, Keys
-	return function(KeyName, processed)
-		if not processed then
+	Connect(InputService[InputEvent], function(KeyName, GuiInput)
+		if not GuiInput then
 			KeyName = KeyName.KeyCode.Name
---			KeysPressed[KeyName] = Boolean
 			if RegisteredKeys[KeyName] then
 				FireSignal(Keys[KeyName][KeyEvent])
 			end
 		end
-	end
+	end)
 end
 
 local Enabled = false
@@ -215,7 +221,7 @@ local Input = {
 }
 
 if not PlayerGuiBackup then
-	PlayerGuiBackup = Instance.new("Folder", Player)
+	PlayerGuiBackup = newInstance("Folder", Player)
 	PlayerGuiBackup.Name = "GuiBackup"
 end
 
@@ -258,18 +264,19 @@ local function HideGui()
 end
 
 function Input:__index(i)
-	local Variable = InputService[i] or error(i .. " is not a valid member of UserInputService")
+	local Variable = InputService[i]
 	if type(Variable) == "function" then
 		local func = Variable
 		function Variable(...) -- We need to wrap functions to mimic ":" syntax
 			return func(InputService, select(2, ...))
 		end
+		rawset(self, i, Variable)
 	end
 	return Variable
 end
 
-Connect(InputService.InputBegan, KeyInputHandler("KeyDown", true)) -- InputBegan listener
-Connect(InputService.InputEnded, KeyInputHandler("KeyUp")) -- InputEnded listener
+HandleInput("InputBegan", "KeyDown")
+HandleInput("InputEnded", "KeyUp")
 Connect(InputService.WindowFocusReleased, WindowFocusReleased)
 Connect(InputService.WindowFocused, WindowFocused)
 ConnectSignal(Keys.Underscore.KeyDown, HideGui)
