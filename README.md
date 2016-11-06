@@ -1,8 +1,5 @@
 # UserInputService
-This module is table wrapper designed to simplify dealing with user input. This module allows you to connect functions to certain events without the need
-to actually call the `UserInputService`, or compare any Enum codes to input
-objects. This is both faster to reference, and considerably more readable
-to the writer.
+This module is table wrapper designed to simplify dealing with user input. This module allows you to connect functions to certain events without the need to actually call the `UserInputService`, or compare any Enum codes to input objects. This is both faster to reference, and considerably more readable to the writer.
 
 This module also allows Users to enter `Screenshot Mode` by pressing `-`. Internally, this temporarily moves all ScreenGui in PlayerGui to a Folder in `LocalPlayer` called `GuiBackup`, as well as disabling the TopBar, which in turn temporarily disables the Chat, Backpack, et cetera.
 
@@ -52,6 +49,8 @@ Q:Wait()
 ```
 Each key has a "KeyUp" and "KeyDown" event that comes with it. If you don't specify, it will default to KeyDown.
 
+Note: KeyUp and KeyDown events are unrelated (except by Name) to the deprecated methods of PlayerMouse.
+
 ### Chaining events
 You can also chain events using the `+` operator. Be careful when using this in Studio though, as your operating system shortcuts take precedence over Roblox.
 ```lua
@@ -65,7 +64,7 @@ local MenuSelect = (L + F + R):Connect(function()
 end)
 ```
 
-Note: KeyUp and KeyDown events do not run off of the deprecated methods of PlayerMouse.
+Note: The Chained Event fires when you press the last key in a Chain. If the other keys are being held down the event fires.
 
 Note: `Keys["KeyName"]` can be used as an abbreviation for `Keys["KeyName"].KeyDown`. Example given in code above with variable declaration `R`
 
