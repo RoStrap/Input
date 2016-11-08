@@ -155,12 +155,12 @@ end
 
 function Keys:__index(v)
 	assert(type(v) == "string", "Table Keys should be indexed by a string")
-	local Connections = {
+	local Connections = setmetatable({
 		KeyUp = newSignal(Enum.KeyCode[v]);
 		KeyDown = newSignal(Enum.KeyCode[v]);
-	}
-	self[v] = setmetatable(Connections, Key)
-	RegisteredKeys[v] = true
+	}, Key)
+	RegisteredKeys[v] = Connections
+	self[v] = Connections
 	return Connections
 end
 
@@ -197,9 +197,9 @@ local function HandleInput(InputEvent, KeyEvent)
 	local RegisteredKeys, FireSignal, Keys = RegisteredKeys, FireSignal, Keys
 	Connect(InputService[InputEvent], function(KeyName, GuiInput)
 		if not GuiInput then
-			KeyName = KeyName.KeyCode.Name
-			if RegisteredKeys[KeyName] then
-				FireSignal(Keys[KeyName][KeyEvent])
+			local RegisteredKey = RegisteredKeys[KeyName.KeyCode.Name]
+			if RegisteredKey then
+				FireSignal(RegisteredKey[KeyEvent])
 			end
 		end
 	end)
@@ -230,7 +230,7 @@ local function WindowFocusReleased()
 end
 
 local function WindowFocused()
-	local TimeAbsent = time() - TimeAbsent
+	TimeAbsent = time() - TimeAbsent
 	if TimeAbsent > Input.AbsentThreshold then
 		FireSignal(WelcomeBack, TimeAbsent)
 	end
