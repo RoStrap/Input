@@ -87,10 +87,11 @@ end
 local function AddSignals(a, b) -- This looks way scarier than it is
 	local KeyCodes, Combination = a.KeyCode
 	local KeyCodeIsTable = type(KeyCodes) == "table"
-	local NumberOfKeyCodes = #KeyCodes
+	local NumberOfKeyCodes
 
 	if KeyCodeIsTable then
 		Combination = {}
+		NumberOfKeyCodes = #KeyCodes
 		for a = 1, NumberOfKeyCodes do
 			Combination[a] = KeyCodes[a]
 		end
