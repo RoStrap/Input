@@ -100,11 +100,11 @@ local function AddSignals(a, b) -- This looks way scarier than it is
 		Combination = {KeyCodes, b.KeyCode}
 	end
 
-	local Combo = newSignal(Combination)
-	local ComboConnections = Combo.Connections
+	Combination = newSignal(Combination)
+	local Combos = Combination.Connections
 
-	Combo.InternalConnection = b:Connect(function()
-		if #ComboConnections > 0 then -- Save on gas mileage
+	Combination.InternalConnection = b:Connect(function()
+		if #Combos > 0 then -- Save on gas mileage
 			local KeysPressed = GetKeysPressed(InputService)
 			local NumberOfKeysPressed = #KeysPressed
 			local AllButtonsArePressed = true
@@ -134,12 +134,12 @@ local function AddSignals(a, b) -- This looks way scarier than it is
 			end
 
 			if AllButtonsArePressed then
-				FireSignal(Combo)
+				FireSignal(Combination)
 			end
 		end
 	end)
 
-	return Combo
+	return Combination
 end
 Signal.__add = AddSignals
 Signal.__index = Signal
