@@ -187,8 +187,8 @@ local Key = {__add = AddSignals}
 function Key:__index(i)
 	local KeyDown = self.KeyDown
 	local Method = KeyDown[i]
-	local function Wrap(_, ...)
-		return Method(KeyDown, ...)
+	local function Wrap(_, a)
+		return Method(KeyDown, a)
 	end
 	self[i] = Wrap
 	return Wrap
