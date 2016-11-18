@@ -44,16 +44,14 @@ Disconnector.__index = Disconnector
 
 local function ConnectSignal(self, func)
 	if func then
-		local Connections = self.Connections
-		Connections[#Connections + 1] = func
-		return setmetatable({Connections = Connections; func = func}, Disconnector)
+		self[#self + 1] = func
+		return setmetatable({Connections = self; func = func}, Disconnector)
 	end
 end
 
 local function DisconnectSignal(self)
-	local Connections = self.Connections
-	for a = 1, #Connections do
-		Connections[a] = nil
+	for a = 1, #self do
+		self[a] = nil
 	end
 end
 
@@ -66,9 +64,8 @@ local function WaitSignal(self)
 end
 
 local function FireSignal(self, ...)
-	local Connections = self.Connections
-	for a = 1, #Connections do
-		Connections[a](...)
+	for a = 1, #self do
+		self[a](...)
 	end
 end
 
@@ -81,13 +78,13 @@ local Signal = {
 }
 
 local function newSignal(KeyCode)
-	return setmetatable({Connections = {}; KeyCode = KeyCode}, Signal)
+	return setmetatable({KeyCode = KeyCode}, Signal)
 end
 
 local function AddSignals(a, b) -- This looks way scarier than it is
-	local KeyCodes, Combination = a.KeyCode
+	a, b = a.KeyDown or a, b.KeyDown or b
+	local KeyCodes, Combination, NumberOfKeyCodes = a.KeyCode
 	local KeyCodeIsTable = type(KeyCodes) == "table"
-	local NumberOfKeyCodes
 
 	if KeyCodeIsTable then
 		Combination = {}
@@ -101,10 +98,8 @@ local function AddSignals(a, b) -- This looks way scarier than it is
 	end
 
 	Combination = newSignal(Combination)
-	local Combos = Combination.Connections
-
-	Combination.InternalConnection = b:Connect(function()
-		if #Combos > 0 then -- Save on gas mileage
+	ConnectSignal(b, function()
+		if #Combination > 0 then -- Save on gas mileage
 			local KeysPressed = GetKeysPressed(InputService)
 			local NumberOfKeysPressed = #KeysPressed
 			local AllButtonsArePressed = true
@@ -151,7 +146,13 @@ local Mouse = {__newindex = PlayerMouse}
 local Key = {__add = AddSignals}
 
 function Key:__index(i)
-	return self.KeyDown[i]
+	local KeyDown = self.KeyDown
+	local Method = KeyDown[i]
+	local function Wrap(_, ...)
+		return Method(KeyDown, ...)
+	end
+	self[i] = Wrap
+	return Wrap
 end
 
 function Keys:__index(v)
@@ -174,7 +175,7 @@ function Mouse:__index(v)
 			Connect(PlayerMouse[sub(v, 7)], function()
 				local ClickedTime = tick()
 				if ClickedTime - LastClicked < 0.5 then
-					FireSignal(Stored, PlayerMouse)
+					FireSignal(Stored)
 					LastClicked = 0
 				else
 					LastClicked = ClickedTime
@@ -184,7 +185,7 @@ function Mouse:__index(v)
 			local Mickey = PlayerMouse[v]
 			if find(tostring(Mickey), "Signal") then
 				Connect(Mickey, function()
-					FireSignal(Stored, PlayerMouse)
+					FireSignal(Stored)
 				end)
 			end
 		end
@@ -231,8 +232,7 @@ local function WindowFocusReleased()
 end
 
 local function WindowFocused()
-	TimeAbsent = time() - TimeAbsent
-	if TimeAbsent > Input.AbsentThreshold then
+	if time() - TimeAbsent > Input.AbsentThreshold then
 		FireSignal(WelcomeBack, TimeAbsent)
 	end
 end
