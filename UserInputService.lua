@@ -15,6 +15,7 @@ local Connect = InputService.InputBegan.Connect
 local Heartbeat = RunService.Heartbeat
 local Wait = Heartbeat.Wait
 local SetCore = StarterGui.SetCore
+local Destroy = game.Destroy
 local GetChildren = game.GetChildren
 
 local sub = string.sub
@@ -24,51 +25,86 @@ local remove = table.remove
 local newInstance = Instance.new
 local type, select, setmetatable, rawset, tostring, tick = type, select, setmetatable, rawset, tostring, tick
 
+local Fire, Disconnect do
+	local Bindable = newInstance("BindableEvent")
+	local Connection = Connect(Bindable.Event, function() end)
+	Fire, Disconnect = Bindable.Fire, Connection.Disconnect
+	Disconnect(Connection)
+	Destroy(Bindable)
+end
+
 -- Client
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local PlayerMouse = Player:GetMouse()
 
 local function DisconnectConnector(self)
-	local func = self.func
-	local Connections = self.Connections
-	for a = 1, #Connections do
-		if Connections[a] == func then
-			remove(Connections, a)
-		end
-	end
+	self.Signal.Main = nil
 end
 
 local Disconnector = {Disconnect = DisconnectConnector}
 Disconnector.__index = Disconnector
 
 local function ConnectSignal(self, func)
-	if func then
-		local Connections = self.Connections
-		Connections[#Connections + 1] = func
-		return setmetatable({Connections = Connections; func = func}, Disconnector)
+	-- Bind first function to this thread
+	-- Bind additional functions to bindable
+	assert(func, "Please connect a function to " .. self.KeyCode.Name)
+	if self.Main then
+		local Bindable = self.Bindable
+		if Bindable then
+			local Connections = self.Connections
+			local Connection = Connect(Bindable.Event, func)
+			if Connections then
+				Connections[#Connections + 1] = Connection
+			else
+				self.Connections = {Connection}
+			end
+			return Connection
+		else
+			local Bindable = newInstance("BindableEvent")
+			self.Bindable = Bindable
+			local Connection = Connect(Bindable.Event, func)
+			self.Connections = {Connection}
+			return Connection
+		end
+	else
+		self.Main = func
+		return setmetatable({Signal = self}, Disconnector)
 	end
 end
 
 local function DisconnectSignal(self)
+	self.Main = nil
 	local Connections = self.Connections
-	for a = 1, #Connections do
-		Connections[a] = nil
+	if Connections then
+		for a = 1, #Connections do
+			Disconnect(Connections[a])
+		end
+		self.Connections = nil
 	end
 end
 
 local function WaitSignal(self)
-	local Connection
-	Connection = ConnectSignal(self, function()
-		Connection = DisconnectConnector(Connection)
-	end)
-	repeat until not Connection or not Wait(Heartbeat)
+	local Bindable = self.Bindable
+	if Bindable then
+		Wait(Bindable.Event)
+	else
+		Bindable = newInstance("BindableEvent")
+		self.Bindable = Bindable
+		Wait(Bindable.Event)
+		if not self.Connections then
+			self.Bindable = Destroy(Bindable)
+		end
+	end
 end
 
-local function FireSignal(self, ...)
-	local Connections = self.Connections
-	for a = 1, #Connections do
-		Connections[a](...)
+local function FireSignal(self)
+	local Main, Bindable = self.Main, self.Bindable
+	if Bindable then
+		Fire(Bindable)
+	end
+	if Main then
+		Main()
 	end
 end
 
@@ -81,13 +117,13 @@ local Signal = {
 }
 
 local function newSignal(KeyCode)
-	return setmetatable({Connections = {}; KeyCode = KeyCode}, Signal)
+	return setmetatable({KeyCode = KeyCode}, Signal)
 end
 
 local function AddSignals(a, b) -- This looks way scarier than it is
-	local KeyCodes, Combination = a.KeyCode
+	a, b = a.KeyDown or a, b.KeyDown or b
+	local KeyCodes, Combination, NumberOfKeyCodes = a.KeyCode
 	local KeyCodeIsTable = type(KeyCodes) == "table"
-	local NumberOfKeyCodes
 
 	if KeyCodeIsTable then
 		Combination = {}
@@ -101,10 +137,8 @@ local function AddSignals(a, b) -- This looks way scarier than it is
 	end
 
 	Combination = newSignal(Combination)
-	local Combos = Combination.Connections
-
-	Combination.InternalConnection = b:Connect(function()
-		if #Combos > 0 then -- Save on gas mileage
+	ConnectSignal(b, function()
+		if #Combination > 0 then -- Save on gas mileage
 			local KeysPressed = GetKeysPressed(InputService)
 			local NumberOfKeysPressed = #KeysPressed
 			local AllButtonsArePressed = true
@@ -151,7 +185,13 @@ local Mouse = {__newindex = PlayerMouse}
 local Key = {__add = AddSignals}
 
 function Key:__index(i)
-	return self.KeyDown[i]
+	local KeyDown = self.KeyDown
+	local Method = KeyDown[i]
+	local function Wrap(_, ...)
+		return Method(KeyDown, ...)
+	end
+	self[i] = Wrap
+	return Wrap
 end
 
 function Keys:__index(v)
@@ -174,7 +214,7 @@ function Mouse:__index(v)
 			Connect(PlayerMouse[sub(v, 7)], function()
 				local ClickedTime = tick()
 				if ClickedTime - LastClicked < 0.5 then
-					FireSignal(Stored, PlayerMouse)
+					FireSignal(Stored)
 					LastClicked = 0
 				else
 					LastClicked = ClickedTime
@@ -184,7 +224,7 @@ function Mouse:__index(v)
 			local Mickey = PlayerMouse[v]
 			if find(tostring(Mickey), "Signal") then
 				Connect(Mickey, function()
-					FireSignal(Stored, PlayerMouse)
+					FireSignal(Stored)
 				end)
 			end
 		end
@@ -231,8 +271,7 @@ local function WindowFocusReleased()
 end
 
 local function WindowFocused()
-	TimeAbsent = time() - TimeAbsent
-	if TimeAbsent > Input.AbsentThreshold then
+	if time() - TimeAbsent > Input.AbsentThreshold then
 		FireSignal(WelcomeBack, TimeAbsent)
 	end
 end
