@@ -20,7 +20,6 @@ class UserInputService
 		Event WelcomeBack(int TimeAbsent)
 //			Event fired when a Player reopens the Roblox Window after closing it for more than @param AbsentThreshold seconds
 ```
-Note: Connections all run on a single thread (the one created by the InputBegan/Ended Connection). If you create multiple connections that yield, they will be called in the order you connected them. If you want to start multiple threads on a single button press, use spawn or a coroutine.
 ## Key events
 Key events are stored inside a table called "Keys", which you can access directly
 from the module. Once you've accessed this table, you can index it for any input type that exists in the KeyCode Enum element. For example, if you wanted to create an event for the key "Q", you'd simply index it:
