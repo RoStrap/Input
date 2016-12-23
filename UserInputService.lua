@@ -209,7 +209,7 @@ function Mouse:__index(v)
 	local Event = newSignal()
 	rawset(self, v, Event)
 
-	if v == "DoubleButton1Click" or v == "DoubleButton1Up" then
+	if v == "DoubleButton1Up" then
 		local LastClicked = 0
 		Connect(PlayerMouse.Button1Up, function()
 			local ClickedTime = tick()
@@ -220,7 +220,7 @@ function Mouse:__index(v)
 				LastClicked = ClickedTime
 			end
 		end)
-	elseif v == "DoubleButton2Click" or v == "DoubleButton2Up" then
+	elseif v == "DoubleButton2Up" then
 		local LastClicked = 0
 		Connect(PlayerMouse.Button2Up, function()
 			local ClickedTime = tick()
@@ -360,7 +360,8 @@ Connect(InputService.WindowFocused, function()
 	end
 end)
 
-ConnectSignal(Keys.Underscore.KeyDown, function()
+local PlayerGuiChildren
+ConnectSignal(Keys.Minus.KeyDown, function()
 	if not Enabled then
 		Enabled = true
 		InputService.MouseIconEnabled = false
@@ -368,6 +369,7 @@ ConnectSignal(Keys.Underscore.KeyDown, function()
 		Player.HealthDisplayDistance = 0
 		Player.NameDisplayDistance = 0
 		local Guis = GetChildren(PlayerGui)
+		PlayerGuiChildren = Guis
 		for a = 1, #Guis do
 			local Gui = Guis[a]
 			if Gui.ClassName == "ScreenGui" then
@@ -380,9 +382,8 @@ ConnectSignal(Keys.Underscore.KeyDown, function()
 		SetCore(StarterGui, "TopbarEnabled", true)
 		Player.HealthDisplayDistance = HealthDisplayDistance
 		Player.NameDisplayDistance = NameDisplayDistance
-		local Guis = GetChildren(PlayerGuiBackup)
-		for a = 1, #Guis do
-			Guis[a].Parent = PlayerGuiBackup
+		for a = 1, #PlayerGuiChildren do
+			PlayerGuiChildren[a].Parent = PlayerGui
 		end
 	end
 end)
