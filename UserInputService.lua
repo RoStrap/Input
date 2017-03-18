@@ -138,7 +138,7 @@ local function AddSignals(a, b) -- This looks way scarier than it is
 
 	Combination = newSignal(Combination)
 	ConnectSignal(b, function()
-		if #Combination > 0 then -- Save on gas mileage
+--		if #Combination > 0 then -- Save on gas mileage
 			local KeysPressed = GetKeysPressed(InputService)
 			local NumberOfKeysPressed = #KeysPressed
 			local AllButtonsArePressed = true
@@ -170,7 +170,7 @@ local function AddSignals(a, b) -- This looks way scarier than it is
 			if AllButtonsArePressed then
 				FireSignal(Combination)
 			end
-		end
+--		end
 	end)
 
 	return Combination
