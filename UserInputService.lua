@@ -34,7 +34,7 @@ local Fire, Disconnect do
 end
 
 -- Client
-local Player = Players.LocalPlayer
+local Player repeat Player = Players.LocalPlayer until Player or not wait()
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local PlayerMouse = Player:GetMouse()
 
