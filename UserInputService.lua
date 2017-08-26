@@ -1,6 +1,7 @@
+-- UserInputService wrapper
+-- @readme https://github.com/RoStrap/Input/blob/master/README.md
 -- @author Narrev
 -- @original ScriptGuider
--- UserInputService wrapper
 
 -- Services
 local GetService = game.GetService
