@@ -186,6 +186,7 @@ local Mouse = {__newindex = PlayerMouse}
 local Key = {__add = AddSignals}
 
 function Key:__index(i)
+	-- Make KeyDown the default if they don't put `.KeyDown`
 	local KeyDown = self.KeyDown
 	local Method = KeyDown[i]
 	local function Wrap(_, a)
