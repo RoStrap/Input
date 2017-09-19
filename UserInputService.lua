@@ -197,7 +197,7 @@ function Key:__index(i)
 end
 
 function Keys:__index(v)
-	if type(v) ~= "string" then error("Table Keys should be indexed by a string") end
+	assert(type(v) == "string", "Table Keys should be indexed by a string")
 	local Connections = setmetatable({
 		KeyUp = newSignal(Enum.KeyCode[v]);
 		KeyDown = newSignal(Enum.KeyCode[v]);
