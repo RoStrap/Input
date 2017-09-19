@@ -186,6 +186,7 @@ local Mouse = {__newindex = PlayerMouse}
 local Key = {__add = AddSignals}
 
 function Key:__index(i)
+	-- Make KeyDown the default if they don't put `.KeyDown`
 	local KeyDown = self.KeyDown
 	local Method = KeyDown[i]
 	local function Wrap(_, a)
@@ -196,7 +197,7 @@ function Key:__index(i)
 end
 
 function Keys:__index(v)
-	assert(type(v) == "string", "Table Keys should be indexed by a string")
+	if type(v) ~= "string" then error("Table Keys should be indexed by a string") end
 	local Connections = setmetatable({
 		KeyUp = newSignal(Enum.KeyCode[v]);
 		KeyDown = newSignal(Enum.KeyCode[v]);
