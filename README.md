@@ -1,5 +1,7 @@
 # Keys
-This library is an even lighter version of the `UserInputService` wrapper.
+A light-weight library for simplifying Key input.
+
+This library is the lighter successor of the `UserInputService` wrapper.
 
 The differences include:
 - `Keys` returns the `Keys` table directly instead of a `UserInputService` wrapper.
