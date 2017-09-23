@@ -106,7 +106,55 @@ UserInputService.WelcomeBack:Connect(function(TimeAbsent)
 end)
 ```
 
-#### Small optimization note that most people don't need to worry about
-The Event/Signal functions of the same name as the Roblox functions are not the Roblox functions, so localizing `Connect`, for example, from `game.ChildAdded.Connect` will not allow for use with custom Events. However, you can localize the functions from a single custom event from this module, as it utilizes metatables.
+# Keys
+This library is an even lighter version of the `UserInputService` wrapper.
 
-If you didn't understand any of that, just go with the prescribed syntax shown in the demos above.
+The differences include:
+- `Keys` returns the `Keys` table directly instead of a `UserInputService` wrapper.
+- `Keys` can only chain two Keys together. Anything 3 or more will error.
+- `Key.KeyDown` is the same table as `Key`, so only `Key.KeyUp` needs to be specified
+- There is no distinguishing between `Shift`, `Control`, or `Alt` keys. Using `LeftShift` for example, will do nothing
+- Only one Key/Combination will fire per key event (but multiple connections can still fire). Thus, when a user does (Shift + C), C will not fire (you can however, call C:Press() within Shift + C if you like).
+```lua
+local require = require(game:GetService("ReplicatedStorage"):WaitForChild("Resources")).LoadLibrary
+local Keys = require("Keys")
+local Shift = Keys.Shift
+local C = Keys.C
+
+local CopyConnection = (Shift + C):Connect(function()
+	print("Copy!")
+end)
+
+local CPress = C:Connect(function()
+	print("C was pressed")
+end)
+```
+- Tables in `Keys` are merely interface tables, and is not at all involved with calling connected Functions. The tables interface with a system that mostly looks like this:
+```lua
+local KeyUps = {
+	Q = function()
+		print("Q was let up")
+	end;
+
+	E = function()
+		print("E was let up")
+	end
+}
+UserInputService.InputEnded:Connect(function(Data, GuiInput)
+	if not GuiInput and Data.KeyCode ~= Unknown then
+		local Function = KeyUps[Data.KeyCode.Name]
+		if Function then
+			Function()
+		end
+	end
+end)
+```
+- There are also two functions of Keys now :D
+```lua
+-- Each of these can be called with either a '.' or a ':', as it doesn't need 'self'
+
+local Keys = require("Keys")
+
+Keys:Pause() -- Disconnects this module's InputEnded and InputBegan connections to UserInputService
+Keys:Resume() -- Reconnects what Pause disconnects
+```
