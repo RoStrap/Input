@@ -1,3 +1,58 @@
+# Keys
+This library is an even lighter version of the `UserInputService` wrapper.
+
+The differences include:
+- `Keys` returns the `Keys` table directly instead of a `UserInputService` wrapper.
+- `Keys` can only chain two Keys together. Anything 3 or more will error.
+- `Key.KeyDown` is the same table as `Key`, so only `Key.KeyUp` needs to be specified
+- There is no distinguishing between `Shift`, `Control`, or `Alt` keys. Using `LeftShift` for example, will do nothing
+- Only one Key/Combination will fire per key event (but multiple connections can still fire). Thus, when a user does (Shift + C), C will not fire (you can however, call C:Press() within Shift + C if you like).
+```lua
+local require = require(game:GetService("ReplicatedStorage"):WaitForChild("Resources")).LoadLibrary
+local Keys = require("Keys")
+local Shift = Keys.Shift
+local C = Keys.C
+
+local CopyConnection = (Shift + C):Connect(function()
+	print("Copy!")
+end)
+
+local CPress = C:Connect(function()
+	print("C was pressed")
+end)
+```
+- Tables in `Keys` are merely interface tables, and is not at all involved with calling connected Functions. The tables interface with a system that mostly looks like this:
+```lua
+local KeyUps = {
+	Q = function()
+		print("Q was let up")
+	end;
+
+	E = function()
+		print("E was let up")
+	end
+}
+UserInputService.InputEnded:Connect(function(Data, GuiInput)
+	if not GuiInput and Data.KeyCode ~= Unknown then
+		local Function = KeyUps[Data.KeyCode.Name]
+		if Function then
+			Function()
+		end
+	end
+end)
+```
+- There are also two functions of Keys now :D
+```lua
+-- Each of these can be called with either a '.' or a ':', as it doesn't need 'self'
+
+local Keys = require("Keys")
+
+Keys:Pause() -- Disconnects this module's InputEnded and InputBegan connections to UserInputService
+Keys:Resume() -- Reconnects what Pause disconnects
+```
+
+See `UserInputService.lua` for further documentation of the `Keys` table, but bear in mind the aforementioned differences.
+
 # UserInputService
 This module is table wrapper designed to simplify dealing with user input. This module allows you to connect functions to certain events without the need to actually call the `UserInputService`, or compare any Enum codes to input objects. This is both faster to reference, and considerably more readable to the writer.
 
@@ -104,57 +159,4 @@ local UserInputService = require(UserInputServiceModule)
 UserInputService.WelcomeBack:Connect(function(TimeAbsent)
 	print("You were AFK for", TimeAbsent, "seconds.")
 end)
-```
-
-# Keys
-This library is an even lighter version of the `UserInputService` wrapper.
-
-The differences include:
-- `Keys` returns the `Keys` table directly instead of a `UserInputService` wrapper.
-- `Keys` can only chain two Keys together. Anything 3 or more will error.
-- `Key.KeyDown` is the same table as `Key`, so only `Key.KeyUp` needs to be specified
-- There is no distinguishing between `Shift`, `Control`, or `Alt` keys. Using `LeftShift` for example, will do nothing
-- Only one Key/Combination will fire per key event (but multiple connections can still fire). Thus, when a user does (Shift + C), C will not fire (you can however, call C:Press() within Shift + C if you like).
-```lua
-local require = require(game:GetService("ReplicatedStorage"):WaitForChild("Resources")).LoadLibrary
-local Keys = require("Keys")
-local Shift = Keys.Shift
-local C = Keys.C
-
-local CopyConnection = (Shift + C):Connect(function()
-	print("Copy!")
-end)
-
-local CPress = C:Connect(function()
-	print("C was pressed")
-end)
-```
-- Tables in `Keys` are merely interface tables, and is not at all involved with calling connected Functions. The tables interface with a system that mostly looks like this:
-```lua
-local KeyUps = {
-	Q = function()
-		print("Q was let up")
-	end;
-
-	E = function()
-		print("E was let up")
-	end
-}
-UserInputService.InputEnded:Connect(function(Data, GuiInput)
-	if not GuiInput and Data.KeyCode ~= Unknown then
-		local Function = KeyUps[Data.KeyCode.Name]
-		if Function then
-			Function()
-		end
-	end
-end)
-```
-- There are also two functions of Keys now :D
-```lua
--- Each of these can be called with either a '.' or a ':', as it doesn't need 'self'
-
-local Keys = require("Keys")
-
-Keys:Pause() -- Disconnects this module's InputEnded and InputBegan connections to UserInputService
-Keys:Resume() -- Reconnects what Pause disconnects
 ```
