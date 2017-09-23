@@ -51,7 +51,7 @@ Keys:Pause() -- Disconnects this module's InputEnded and InputBegan connections 
 Keys:Resume() -- Reconnects what Pause disconnects
 ```
 
-See `UserInputService.lua` for further documentation of the `Keys` table, but bear in mind the aforementioned differences.
+See `UserInputService.lua` below for further documentation of the `Keys` table, but bear in mind the aforementioned differences.
 
 # UserInputService
 This module is table wrapper designed to simplify dealing with user input. This module allows you to connect functions to certain events without the need to actually call the `UserInputService`, or compare any Enum codes to input objects. This is both faster to reference, and considerably more readable to the writer.
