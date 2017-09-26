@@ -86,7 +86,9 @@ function Multicaller:Disconnect()
 end
 
 local Key = {}
-Key.__index = Key
+function Key:__index(i)
+	return i == "KeyDown" and self or Key[i]
+end
 
 function Key.__add(a, b)
 	assert(a and b and a.KeyDown and b.KeyDown and a.KeyDown == a and b.KeyDown == b, "You can only chain 2 KeyDown events")
@@ -178,7 +180,6 @@ return setmetatable(Keys, {
 			KeyName = KeyName;
 		}, Key)
 
-		NewKey.KeyDown = NewKey
 		self[KeyName] = NewKey
 		return NewKey
 	end
