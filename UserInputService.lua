@@ -13,18 +13,13 @@ local Players = GetService(game, "Players")
 -- Optimize
 local GetKeysPressed = InputService.GetKeysPressed
 local Connect = InputService.InputBegan.Connect
-local Heartbeat = RunService.Heartbeat
-local Wait = Heartbeat.Wait
+local Wait = RunService.Heartbeat.Wait
 local SetCore = StarterGui.SetCore
 local Destroy = game.Destroy
 local GetChildren = game.GetChildren
 
-local sub = string.sub
-local time = os.time
-local find = string.find
-local remove = table.remove
 local newInstance = Instance.new
-local type, select, setmetatable, rawset, tostring, tick = type, select, setmetatable, rawset, tostring, tick
+local type, select, setmetatable, rawset, tick = type, select, setmetatable, rawset, tick
 
 local Fire, Disconnect do
 	local Bindable = newInstance("BindableEvent")
