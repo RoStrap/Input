@@ -1,3 +1,4 @@
+```lua
 -- UserInputService wrapper
 -- @readme https://github.com/RoStrap/Input/blob/master/README.md
 -- @author Narrev
@@ -391,3 +392,4 @@ ConnectSignal(Keys.Minus.KeyDown, function()
 end)
 
 return setmetatable(Input, Input)
+```
