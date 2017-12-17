@@ -10,8 +10,9 @@ The differences include:
 - There is no distinguishing between `Shift`, `Control`, or `Alt` keys. Using `LeftShift` for example, will do nothing
 - Only one Key/Combination will fire per key event (but multiple connections can still fire). Thus, when a user does (Shift + C), C will not fire (you can however, call C:Press() within Shift + C if you like).
 ```lua
-local require = require(game:GetService("ReplicatedStorage"):WaitForChild("Resources")).LoadLibrary
-local Keys = require("Keys")
+local Resources = require(game:GetService("ReplicatedStorage"):WaitForChild("Resources"))
+local Keys = Resources:LoadLibrary("Keys")
+
 local Shift = Keys.Shift
 local C = Keys.C
 
@@ -47,7 +48,7 @@ end)
 ```lua
 -- Each of these can be called with either a '.' or a ':', as it doesn't need 'self'
 
-local Keys = require("Keys")
+local Keys = Resources:LoadLibrary("Keys")
 
 Keys:Pause() -- Disconnects this module's InputEnded and InputBegan connections to UserInputService
 Keys:Resume() -- Reconnects what Pause disconnects
