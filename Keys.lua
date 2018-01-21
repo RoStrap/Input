@@ -16,6 +16,12 @@ local Ambiguous = {
 	RightControl = "Control";
 }
 
+local DeclarationAmbiguous = {
+	Ctrl = "Control";
+	Cmd = "Control";
+	Command = "Control";
+}
+
 local function KeyDown(Data, GuiInput)
 	if not GuiInput and Data.KeyCode ~= Unknown then
 		local KeyName = Data.KeyCode.Name
@@ -70,12 +76,15 @@ Multicaller.__index = Multicaller
 
 function Multicaller:__call()
 	self.Bindable:Fire()
-	self[1]()
+	local Function = self[1]
+	if Function then
+		Function()
+	end	
 end
 
 function Multicaller:Disconnect()
-	local Storage = self.Key.Storage
-	local KeyName = self.Key.KeyName
+	local Storage = self.KeyEvent.Storage
+	local KeyName = self.KeyEvent.KeyName
 	local Existing = Storage[KeyName]
 
 	if type(Existing) == "table" then
@@ -85,13 +94,14 @@ function Multicaller:Disconnect()
 	end
 end
 
-local Key = {}
-function Key:__index(i)
-	return i == "KeyDown" and self or Key[i]
+local KeyEvent = {}
+
+function KeyEvent:__index(i)
+	return i == "KeyDown" and self or KeyEvent[i]
 end
 
-function Key.__add(a, b)
-	assert(a and b and a.KeyDown and b.KeyDown and a.KeyDown == a and b.KeyDown == b, "You can only chain 2 KeyDown events")
+function KeyEvent.__add(a, b)
+	assert(a and b and a.Storage == KeyDowns and b.Storage == KeyDowns, "You can only chain 2 KeyDown events")
 
 	local Storage = Combinations[b.KeyName]
 	if not Storage then
@@ -102,10 +112,10 @@ function Key.__add(a, b)
 	return setmetatable({
 		KeyName = a.KeyName;
 		Storage = Storage;
-	}, Key)
+	}, KeyEvent)
 end
 
-function Key:Connect(Function)
+function KeyEvent:Connect(Function)
 	local Storage = self.Storage
 	local KeyName = self.KeyName
 	local Existing = Storage[KeyName]
@@ -126,11 +136,11 @@ function Key:Connect(Function)
 		end		
 	else
 		Storage[KeyName] = Function
-		return setmetatable({Key = self}, Multicaller)
+		return setmetatable({KeyEvent = self}, Multicaller)
 	end
 end
 
-function Key:Disconnect()
+function KeyEvent:Disconnect()
 	local Existing = self.Storage[self.KeyName]
 	if type(Existing) == "table" then
 		local Connections = Existing.Connections
@@ -140,46 +150,51 @@ function Key:Disconnect()
 		end
 		Existing.Bindable, Existing.Connections, Existing[1] = Existing.Bindable:Destroy()
 	end
-	self.Storage[self.KeyName], Existing = nil
+	self.Storage[self.KeyName] = nil
 end
 
-function Key:Press()
+function KeyEvent:Press()
 	self.Storage[self.KeyName]()
 end
-Key.Fire = Key.Press
+KeyEvent.Fire = KeyEvent.Press
 
-function Key:Wait()
+function KeyEvent:Wait()
 	local Existing = self.Storage[self.KeyName]
+
 	if type(Existing) == "table" then
 		Existing.Bindable.Event:Wait()
 	else
-		local Bindable = Instance.new("BindableEvent")
 		local Caller = setmetatable({
 			Existing;
-			Bindable = Bindable;
+			Bindable = Instance.new("BindableEvent");
 			Connections = {};
 		}, Multicaller)
+
 		self.Storage[self.KeyName] = Caller
-		Bindable.Event:Wait()
+		Caller.Bindable.Event:Wait()
+
 		if #Caller.Connections == 0 then
-			self.Storage[self.KeyName], Caller = Existing
-			Bindable:Destroy()
+			self.Storage[self.KeyName] = Existing
+			Caller.Bindable, Caller.Connections, Caller[1] = Caller.Bindable:Destroy()
 		end
 	end
 end
 
 return setmetatable(Keys, {
-	__index = function(self, KeyName)	
-		local NewKey = setmetatable({
+	__index = function(self, KeyName)
+		KeyName = DeclarationAmbiguous[KeyName] or KeyName
+		local NewKey = {
 			KeyUp = setmetatable({
 				KeyName = KeyName;
 				Storage = KeyUps;
-			}, Key);
+			}, KeyEvent);
 
-			Storage = KeyDowns;
-			KeyName = KeyName;
-		}, Key)
-
+			KeyDown = setmetatable({
+				KeyName = KeyName;
+				Storage = KeyDowns;
+			}, KeyEvent);
+		}
+		
 		self[KeyName] = NewKey
 		return NewKey
 	end
