@@ -95,10 +95,7 @@ function Multicaller:Disconnect()
 end
 
 local KeyEvent = {}
-
-function KeyEvent:__index(i)
-	return i == "KeyDown" and self or KeyEvent[i]
-end
+KeyEvent.__index = KeyEvent
 
 function KeyEvent.__add(a, b)
 	assert(a and b and a.Storage == KeyDowns and b.Storage == KeyDowns, "You can only chain 2 KeyDown events")
