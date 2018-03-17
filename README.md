@@ -46,7 +46,7 @@ end)
 ```
 
 ## Optimization
-This is an extremely light library. The tables within `Keys` are merely interface tables, and is not directly involved with calling connected Functions. The tables interface with a system that mostly looks like this:
+This is an extremely light library. The tables within `Keys` are merely interface tables, and are not directly involved with calling connected Functions. The tables interface with a system that mostly looks like this:
 ```lua
 local KeyUps = {
 	Q = function()
@@ -58,7 +58,7 @@ local KeyUps = {
 	end
 }
 
-UserInputService.InputBegan:Connect(function(Data, GuiInput)
+UserInputService.InputEnded:Connect(function(Data, GuiInput)
 	if not GuiInput and Data.KeyCode ~= Enum.KeyCode.Unknown then
 		local Function = KeyUps[Data.KeyCode.Name]
 		if Function then
