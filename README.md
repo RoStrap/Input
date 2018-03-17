@@ -5,16 +5,15 @@ This library is the lighter successor of the `UserInputService` wrapper.
 
 The differences include:
 - `Keys` returns the `Keys` table directly instead of a `UserInputService` wrapper.
-- `Keys` can only chain two Keys together. Anything 3 or more will error.
-- `Key.KeyDown` is the same table as `Key`, so only `Key.KeyUp` needs to be specified
-- There is no distinguishing between `Shift`, `Control`, or `Alt` keys. Using `LeftShift` for example, will do nothing
+- `Keys` can only chain two (KeyDown) Keys together. Anything 3 or more will error.
+- There is no distinguishing between `Shift`, `Control`, or `Alt` keys. You must use "Shift" instead of "LeftShift"
 - Only one Key/Combination will fire per key event (but multiple connections can still fire). Thus, when a user does (Shift + C), C will not fire (you can however, call C:Press() within Shift + C if you like).
 ```lua
 local Resources = require(game:GetService("ReplicatedStorage"):WaitForChild("Resources"))
 local Keys = Resources:LoadLibrary("Keys")
 
-local Shift = Keys.Shift
-local C = Keys.C
+local Shift = Keys.Shift.KeyDown
+local C = Keys.C.KeyDown
 
 local CopyConnection = (Shift + C):Connect(function()
 	print("Copy!")
