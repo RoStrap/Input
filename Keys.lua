@@ -26,7 +26,7 @@ local function KeyDown(Data, GuiInput)
 	if not GuiInput and Data.KeyCode ~= Unknown then
 		local KeyName = Data.KeyCode.Name
 		KeyName = Ambiguous[KeyName] or KeyName
-		
+
 		local Combinations = Combinations[KeyName]
 		if Combinations then
 			local KeysPressed = UserInputService:GetKeysPressed()
@@ -38,7 +38,7 @@ local function KeyDown(Data, GuiInput)
 				end
 			end
 		end
-		
+
 		local Function = KeyDowns[KeyName]
 		if Function then
 			return Function()
@@ -79,7 +79,7 @@ function Multicaller:__call()
 	local Function = self[1]
 	if Function then
 		Function()
-	end	
+	end
 end
 
 function Multicaller:Disconnect()
@@ -130,7 +130,7 @@ function KeyEvent:Connect(Function)
 				Connections = {Connection};
 			}, Multicaller)
 			return Connection
-		end		
+		end
 	else
 		Storage[KeyName] = Function
 		return setmetatable({KeyEvent = self}, Multicaller)
@@ -191,7 +191,7 @@ return setmetatable(Keys, {
 				Storage = KeyDowns;
 			}, KeyEvent);
 		}
-		
+
 		self[KeyName] = NewKey
 		return NewKey
 	end
