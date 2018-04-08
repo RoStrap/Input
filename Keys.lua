@@ -1,3 +1,4 @@
+-- A cleaner way of connecting functions to key-presses
 -- @author Validark
 -- @readme https://github.com/RoStrap/Input/blob/master/README.md
 
