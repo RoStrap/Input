@@ -73,7 +73,7 @@ end
 
 local function KeyUp(Data, GuiInput)
 	if not GuiInput and Data.KeyCode ~= Unknown then
-		local Function = KeyUps[Data.KeyCode.Name]
+		local Function = KeyUps[Data.KeyCode.Value]
 		if Function then
 			return Function()
 		end
