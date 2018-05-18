@@ -16,6 +16,8 @@ local Q = Keys.Q -- returns a Key Object
 ### Key
 These table objects contain two custom Signals (technically, they are interfaces). `KeyDown` and `KeyUp`
 ```lua
+local Q = Keys.Q -- returns a Key Object
+
 Q.KeyDown:Connect(function()
 	print("Q was pressed!")
 end)
@@ -28,7 +30,7 @@ end)
 ### Signals
 In this module, `KeyDown` and `KeyUp` Signals have the following functions:
 ```lua
-local Shift = Keys.Shift.KeyDown -- Shift fires for both LeftShift and RightShift
+local Shift = Keys.Shift.KeyDown
 local E = Keys.E.KeyDown
 
 E:Connect(function() -- Connects a function
@@ -45,7 +47,7 @@ local Shift_E = (Shift + E):Connect(function() -- You can add 2 Keys together to
 end)
 ```
 
-## Optimization
+## Overhead
 This is an extremely light library. The tables within `Keys` are merely interface tables, and are not directly involved with calling connected Functions. The tables interface with a system that mostly looks like this:
 ```lua
 local KeyUps = {
