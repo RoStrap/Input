@@ -41,7 +41,7 @@ E:Press() -- Fires open connections
 E:Fire() -- Same as Press()
 E:Wait() -- Yields until event fires
 
-local Shift_E = (Shift + E):Connect(function() -- You can add 2 Keys together to get a combo event!
+;(Shift + E):Connect(function() -- You can add 2 Keys together to get a combo event!
 	-- NOTE: Neither Shift nor E fire when (Shift + E) fires
 	-- If you want to fire one or both of them, do Shift:Press() or E:Press()
 end)
